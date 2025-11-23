@@ -248,6 +248,8 @@ const CreateProfileInput = new GraphQLInputObjectType({
 const Mutations = new GraphQLObjectType<GqlContext>({
   name: 'Mutations',
   fields: () => ({
+
+    // create
     createUser: {
       type: new GraphQLNonNull(UserType),
       args: {
@@ -305,6 +307,20 @@ const Mutations = new GraphQLObjectType<GqlContext>({
         });
       },
     },
+
+    // delete
+    deleteUser: {
+      type: new GraphQLNonNull(GraphQLString),
+      args: {
+        id: { type: new GraphQLNonNull(UUIDScalar) },
+      },
+      resolve: async (_src, args, { prisma }) => {
+        await prisma.user.delete({ where: { id: args.id } });
+        return 'USER_DELETED';
+      },
+    },
+
+
 
   })
 });
