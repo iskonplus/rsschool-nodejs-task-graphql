@@ -6,6 +6,8 @@ import {
   GraphQLString,
   GraphQLFloat,
   GraphQLInputObjectType,
+  GraphQLBoolean,
+  GraphQLInt,
 } from 'graphql';
 
 import { PrismaClient, Post, MemberType, Profile } from '@prisma/client';
@@ -212,6 +214,8 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
 
 });
 
+
+
 const CreateUserInput = new GraphQLInputObjectType({
   name: 'CreateUserInput',
   fields: {
@@ -225,13 +229,23 @@ const CreatePostInput = new GraphQLInputObjectType({
   fields: {
     title: { type: new GraphQLNonNull(GraphQLString) },
     content: { type: new GraphQLNonNull(GraphQLString) },
+    authorId: { type: new GraphQLNonNull(UUIDScalar) },
+  },
+});
+
+const CreateProfileInput = new GraphQLInputObjectType({
+  name: 'CreateProfileInput',
+  fields: {
+    isMale: { type: new GraphQLNonNull(GraphQLBoolean) },
+    yearOfBirth: { type: new GraphQLNonNull(GraphQLInt) },
     userId: { type: new GraphQLNonNull(UUIDScalar) },
+    memberTypeId: { type: new GraphQLNonNull(MemberTypeId) },
   },
 });
 
 
 
-const Mutations = new GraphQLObjectType({
+const Mutations = new GraphQLObjectType<GqlContext>({
   name: 'Mutations',
   fields: () => ({
     createUser: {
@@ -239,36 +253,60 @@ const Mutations = new GraphQLObjectType({
       args: {
         dto: { type: new GraphQLNonNull(CreateUserInput) },
       },
-      async resolve(_src, args, context) {
-        const { prisma } = context;
-
-        return prisma.user.create({
+      resolve: async (_src, args, { prisma }) =>
+        prisma.user.create({
           data: {
             name: args.dto.name,
             balance: args.dto.balance,
           },
-        });
-      },
+        }),
     },
+
     createPost: {
       type: new GraphQLNonNull(PostType),
       args: {
         dto: { type: new GraphQLNonNull(CreatePostInput) },
       },
-      async resolve(_src, args, context) {
-        const { prisma } = context;
-        const { title, content, userId } = args.dto;
+      async resolve(_src, args, { prisma }) {
+        const { title, content, authorId } = args.dto;
 
-        const post = await prisma.post.create({
-          data: { title, content, userId },
+        return prisma.post.create({
+          data: {
+            title,
+            content,
+            author: {
+              connect: { id: authorId },
+            },
+          },
         });
-
-        return post;
       },
     },
 
+    createProfile: {
+      type: new GraphQLNonNull(ProfileType),
+      args: {
+        dto: { type: new GraphQLNonNull(CreateProfileInput) },
+      },
+      resolve: async (_src, args, { prisma }) => {
+        const { isMale, yearOfBirth, userId, memberTypeId } = args.dto;
 
-  }),
+        const currentYear = new Date().getFullYear();
+        if (yearOfBirth < 1900 || yearOfBirth > currentYear) {
+          throw new Error('Invalid yearOfBirth');
+        }
+
+        return prisma.profile.create({
+          data: {
+            isMale,
+            yearOfBirth,
+            userId,
+            memberTypeId,
+          },
+        });
+      },
+    },
+
+  })
 });
 
 export const schema = new GraphQLSchema({

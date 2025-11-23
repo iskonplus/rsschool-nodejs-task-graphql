@@ -6,16 +6,13 @@ import { schema } from './schema.js';
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { prisma } = fastify;
 
-  fastify.route({
-    url: '/',
-    method: 'POST',
+  fastify.post('/', {
     schema: {
       ...createGqlResponseSchema,
       response: {
         200: gqlResponseSchema,
       },
     },
-
     async handler(req) {
       const { query, variables } = req.body;
 
@@ -23,12 +20,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         schema,
         source: query,
         variableValues: variables,
-        contextValue: {
-          prisma,
-        },
+        contextValue: { prisma },
       });
-        // console.log('GQL RESULT >>>', JSON.stringify(result, null, 2));
-
 
       return result;
     },
