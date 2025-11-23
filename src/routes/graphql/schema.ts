@@ -1,5 +1,5 @@
 import { GraphQLSchema, GraphQLObjectType, GraphQLNonNull, GraphQLList, GraphQLError } from 'graphql';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Post } from '@prisma/client';
 import { UserType, ProfileType, PostType, MemberTypeType } from './types/index.js';
 import { UUIDScalar } from './scalars.js';
 
@@ -39,6 +39,23 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
 
         return user;
       }
+    },
+
+    // get posts
+     posts: {
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(PostType)),
+      ),
+      async resolve(
+        _source: unknown,
+        _args: unknown,
+        context: GqlContext,
+      ): Promise<Post[]> {
+        const { prisma } = context;
+
+        const posts = await prisma.post.findMany();
+        return posts;
+      },
     },
 
 
