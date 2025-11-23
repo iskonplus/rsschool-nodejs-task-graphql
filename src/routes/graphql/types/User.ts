@@ -11,7 +11,6 @@ import { PostType } from './Post.js';
 import { MemberTypeType } from './MemberType.js';
 
 export const UserType = new GraphQLObjectType({
-
     name: 'User',
     fields: () => ({
         id: { type: new GraphQLNonNull(UUIDScalar) },
@@ -22,8 +21,24 @@ export const UserType = new GraphQLObjectType({
         posts: { type: new GraphQLList(PostType) },
         memberType: { type: MemberTypeType },
 
-        userSubscribedTo: { type: new GraphQLList(UserType) },
-        subscribedToUser: { type: new GraphQLList(UserType) },
-    }),
+        userSubscribedTo: {
+            type: new GraphQLList(UserType),
+            resolve(source: any) {
+                if (!source.userSubscribedTo) {
+                    return [];
+                }
+                return source.userSubscribedTo.map((link: any) => link.author);
+            },
+        },
 
+        subscribedToUser: {
+            type: new GraphQLList(UserType),
+            resolve(source: any) {
+                if (!source.subscribedToUser) {
+                    return [];
+                }
+                return source.subscribedToUser.map((link: any) => link.subscriber);
+            },
+        },
+    }),
 });

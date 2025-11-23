@@ -6,7 +6,7 @@ import {
   GraphQLString,
 } from 'graphql';
 import { GraphQLError } from 'graphql';
-import { PrismaClient, User, Post, MemberType, Profile  } from '@prisma/client';
+import { PrismaClient, User, Post, MemberType, Profile } from '@prisma/client';
 
 import {
   UserType,
@@ -14,7 +14,7 @@ import {
   PostType,
   MemberTypeType,
 } from './types/index.js';
-import { UUIDScalar } from './scalars.js';
+import { MemberTypeId, UUIDScalar } from './scalars.js';
 
 type GqlContext = {
   prisma: PrismaClient;
@@ -29,13 +29,29 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
       type: new GraphQLNonNull(
         new GraphQLList(new GraphQLNonNull(UserType)),
       ),
-      async resolve(
-        _source: unknown,
-        _args: unknown,
-        context: GqlContext,
-      ): Promise<User[]> {
+      async resolve(_src, _args, context: GqlContext) {
         const { prisma } = context;
-        return prisma.user.findMany();
+
+        return prisma.user.findMany({
+          include: {
+            profile: {
+              include: {
+                memberType: true,
+              },
+            },
+            posts: true,
+            userSubscribedTo: {
+              include: {
+                author: true,
+              },
+            },
+            subscribedToUser: {
+              include: {
+                subscriber: true,
+              },
+            },
+          },
+        });
       },
     },
 
@@ -45,22 +61,34 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
       args: {
         id: { type: new GraphQLNonNull(UUIDScalar) },
       },
-      async resolve(
-        _source: unknown,
-        args: { id: string },
-        context: GqlContext,
-      ): Promise<User> {
+      async resolve(_src, args: { id: string }, context: GqlContext) {
         const { prisma } = context;
 
         const user = await prisma.user.findUnique({
           where: { id: args.id },
+          include: {
+
+            profile: {
+              include: {
+                memberType: true,
+              },
+            },
+
+            posts: true,
+            userSubscribedTo: {
+              include: {
+                author: true,
+              },
+            },
+            subscribedToUser: {
+              include: {
+                subscriber: true,
+              },
+            },
+          },
         });
 
-        if (!user) {
-          throw new GraphQLError('User not found');
-        }
-
-        return user;
+        return user ?? null;
       },
     },
 
@@ -85,22 +113,14 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
       args: {
         id: { type: new GraphQLNonNull(UUIDScalar) },
       },
-      async resolve(
-        _source: unknown,
-        args: { id: string },
-        context: GqlContext,
-      ): Promise<Post> {
+      async resolve(_src, args: { id: string }, context: GqlContext) {
         const { prisma } = context;
 
         const post = await prisma.post.findUnique({
           where: { id: args.id },
         });
 
-        if (!post) {
-          throw new GraphQLError('Post not found');
-        }
-
-        return post;
+        return post ?? null;
       },
     },
 
@@ -123,25 +143,16 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
     memberType: {
       type: MemberTypeType,
       args: {
-        id: { type: new GraphQLNonNull(GraphQLString) },
-
+        id: { type: new GraphQLNonNull(MemberTypeId) },
       },
-      async resolve(
-        _source: unknown,
-        args: { id: string },
-        context: GqlContext,
-      ): Promise<MemberType> {
+      async resolve(_src, args, context) {
         const { prisma } = context;
 
         const memberType = await prisma.memberType.findUnique({
           where: { id: args.id },
         });
 
-        if (!memberType) {
-          throw new GraphQLError('MemberType not found');
-        }
-
-        return memberType;
+        return memberType ?? null;
       },
     },
 
@@ -166,22 +177,17 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
       args: {
         id: { type: new GraphQLNonNull(UUIDScalar) },
       },
-      async resolve(
-        _source: unknown,
-        args: { id: string },
-        context: GqlContext,
-      ): Promise<Profile> {
+      async resolve(_src, args: { id: string }, context: GqlContext) {
         const { prisma } = context;
 
         const profile = await prisma.profile.findUnique({
           where: { id: args.id },
+          include: {
+            memberType: true,
+          },
         });
 
-        if (!profile) {
-          throw new GraphQLError('Profile not found');
-        }
-
-        return profile;
+        return profile ?? null;
       },
     },
 
