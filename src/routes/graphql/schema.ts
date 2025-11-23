@@ -3,6 +3,7 @@ import {
   GraphQLObjectType,
   GraphQLNonNull,
   GraphQLList,
+  GraphQLString,
 } from 'graphql';
 import { GraphQLError } from 'graphql';
 import { PrismaClient, User, Post, MemberType, Profile  } from '@prisma/client';
@@ -115,6 +116,32 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
       ): Promise<MemberType[]> {
         const { prisma } = context;
         return prisma.memberType.findMany();
+      },
+    },
+
+    // get member-types by id
+    memberType: {
+      type: MemberTypeType,
+      args: {
+        id: { type: new GraphQLNonNull(GraphQLString) },
+
+      },
+      async resolve(
+        _source: unknown,
+        args: { id: string },
+        context: GqlContext,
+      ): Promise<MemberType> {
+        const { prisma } = context;
+
+        const memberType = await prisma.memberType.findUnique({
+          where: { id: args.id },
+        });
+
+        if (!memberType) {
+          throw new GraphQLError('MemberType not found');
+        }
+
+        return memberType;
       },
     },
 
