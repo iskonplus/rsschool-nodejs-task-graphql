@@ -160,6 +160,31 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
       },
     },
 
+    // get profile by id
+    profile: {
+      type: ProfileType,
+      args: {
+        id: { type: new GraphQLNonNull(UUIDScalar) },
+      },
+      async resolve(
+        _source: unknown,
+        args: { id: string },
+        context: GqlContext,
+      ): Promise<Profile> {
+        const { prisma } = context;
+
+        const profile = await prisma.profile.findUnique({
+          where: { id: args.id },
+        });
+
+        if (!profile) {
+          throw new GraphQLError('Profile not found');
+        }
+
+        return profile;
+      },
+    },
+
 
   }),
 
