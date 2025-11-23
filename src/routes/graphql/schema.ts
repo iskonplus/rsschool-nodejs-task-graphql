@@ -55,7 +55,7 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
       },
     },
 
-    // get users by id
+    // get user by id
     user: {
       type: UserType,
       args: {
@@ -67,22 +67,36 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
         const user = await prisma.user.findUnique({
           where: { id: args.id },
           include: {
-
             profile: {
               include: {
                 memberType: true,
               },
             },
-
             posts: true,
             userSubscribedTo: {
               include: {
-                author: true,
+                author: {
+                  include: {
+                    subscribedToUser: {
+                      include: {
+                        subscriber: true,
+                      },
+                    },
+                  },
+                },
               },
             },
             subscribedToUser: {
               include: {
-                subscriber: true,
+                subscriber: {
+                  include: {
+                    userSubscribedTo: {
+                      include: {
+                        author: true,
+                      },
+                    },
+                  },
+                },
               },
             },
           },
