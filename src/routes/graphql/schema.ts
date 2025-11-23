@@ -42,7 +42,7 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
     },
 
     // get posts
-     posts: {
+    posts: {
       type: new GraphQLNonNull(
         new GraphQLList(new GraphQLNonNull(PostType)),
       ),
