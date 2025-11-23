@@ -4,9 +4,11 @@ import {
   GraphQLNonNull,
   GraphQLList,
   GraphQLString,
+  GraphQLFloat,
+  GraphQLInputObjectType,
 } from 'graphql';
-import { GraphQLError } from 'graphql';
-import { PrismaClient, User, Post, MemberType, Profile } from '@prisma/client';
+
+import { PrismaClient, Post, MemberType, Profile } from '@prisma/client';
 
 import {
   UserType,
@@ -210,14 +212,39 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
 
 });
 
+const CreateUserInput = new GraphQLInputObjectType({
+  name: 'CreateUserInput',
+  fields: {
+    name: { type: new GraphQLNonNull(GraphQLString) },
+    balance: { type: new GraphQLNonNull(GraphQLFloat) },
+  },
+});
 
 
-// const Mutations = new GraphQLObjectType({
-//   name: 'Mutations',
-//   fields: () => ({}),
-// });
+
+const Mutations = new GraphQLObjectType({
+  name: 'Mutations',
+  fields: () => ({
+    createUser: {
+      type: new GraphQLNonNull(UserType),
+      args: {
+        dto: { type: new GraphQLNonNull(CreateUserInput) },
+      },
+      async resolve(_src, args, context) {
+        const { prisma } = context;
+
+        return prisma.user.create({
+          data: {
+            name: args.dto.name,
+            balance: args.dto.balance,
+          },
+        });
+      },
+    },
+  }),
+});
 
 export const schema = new GraphQLSchema({
   query: RootQueryType,
-  // mutation: Mutations,
+  mutation: Mutations,
 });
