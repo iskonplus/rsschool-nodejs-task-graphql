@@ -3,10 +3,16 @@ import {
   GraphQLObjectType,
   GraphQLNonNull,
   GraphQLList,
-  GraphQLError,
 } from 'graphql';
-import { PrismaClient, Post, MemberType } from '@prisma/client';
-import { UserType, ProfileType, PostType, MemberTypeType } from './types/index.js';
+import { GraphQLError } from 'graphql';
+import { PrismaClient, User, Post, MemberType, Profile  } from '@prisma/client';
+
+import {
+  UserType,
+  ProfileType,
+  PostType,
+  MemberTypeType,
+} from './types/index.js';
 import { UUIDScalar } from './scalars.js';
 
 type GqlContext = {
@@ -16,11 +22,19 @@ type GqlContext = {
 const RootQueryType = new GraphQLObjectType<GqlContext>({
   name: 'RootQueryType',
   fields: () => ({
+
     // get users
     users: {
-      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
-      async resolve(_src, _args, context) {
-        return context.prisma.user.findMany();
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(UserType)),
+      ),
+      async resolve(
+        _source: unknown,
+        _args: unknown,
+        context: GqlContext,
+      ): Promise<User[]> {
+        const { prisma } = context;
+        return prisma.user.findMany();
       },
     },
 
@@ -30,8 +44,14 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
       args: {
         id: { type: new GraphQLNonNull(UUIDScalar) },
       },
-      async resolve(_source: unknown, args: { id: string }, context: GqlContext) {
-        const user = await context.prisma.user.findUnique({
+      async resolve(
+        _source: unknown,
+        args: { id: string },
+        context: GqlContext,
+      ): Promise<User> {
+        const { prisma } = context;
+
+        const user = await prisma.user.findUnique({
           where: { id: args.id },
         });
 
@@ -45,16 +65,16 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
 
     // get posts
     posts: {
-      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(PostType))),
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(PostType)),
+      ),
       async resolve(
         _source: unknown,
         _args: unknown,
         context: GqlContext,
       ): Promise<Post[]> {
         const { prisma } = context;
-
-        const posts = await prisma.post.findMany();
-        return posts;
+        return prisma.post.findMany();
       },
     },
 
@@ -94,16 +114,30 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
         context: GqlContext,
       ): Promise<MemberType[]> {
         const { prisma } = context;
-
-        const memberTypes = await prisma.memberType.findMany();
-        return memberTypes;
+        return prisma.memberType.findMany();
       },
     },
 
+    // get profiles
+    profiles: {
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(ProfileType)),
+      ),
+      async resolve(
+        _source: unknown,
+        _args: unknown,
+        context: GqlContext,
+      ): Promise<Profile[]> {
+        const { prisma } = context;
+        return prisma.profile.findMany();
+      },
+    },
+
+
   }),
 
-
 });
+
 
 
 const Mutations = new GraphQLObjectType({
