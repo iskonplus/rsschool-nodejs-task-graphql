@@ -251,6 +251,16 @@ const ChangePostInput = new GraphQLInputObjectType({
   },
 });
 
+const ChangeProfileInput = new GraphQLInputObjectType({
+  name: 'ChangeProfileInput',
+  fields: {
+    isMale: { type: GraphQLBoolean },
+    yearOfBirth: { type: GraphQLInt },
+    userId: { type: UUIDScalar },
+    memberTypeId: { type: MemberTypeId },
+  },
+});
+
 
 
 const Mutations = new GraphQLObjectType<GqlContext>({
@@ -362,6 +372,38 @@ const Mutations = new GraphQLObjectType<GqlContext>({
           where: { id: args.id },
           data: args.dto,
         }),
+    },
+
+    changeProfile: {
+      type: new GraphQLNonNull(ProfileType),
+      args: {
+        id: { type: new GraphQLNonNull(UUIDScalar) },
+        dto: { type: new GraphQLNonNull(ChangeProfileInput) },
+      },
+      resolve: async (_src, args, { prisma }) => {
+        const { dto } = args;
+
+        if (typeof dto.yearOfBirth === 'number') {
+          const currentYear = new Date().getFullYear();
+          if (dto.yearOfBirth < 1900 || dto.yearOfBirth > currentYear) {
+            throw new Error('Invalid yearOfBirth');
+          }
+        }
+
+        if (dto.userId) {
+          const user = await prisma.user.findUnique({
+            where: { id: dto.userId },
+          });
+          if (!user) {
+            throw new Error('Invalid userId');
+          }
+        }
+
+        return prisma.profile.update({
+          where: { id: args.id },
+          data: dto,
+        });
+      },
     },
 
 
