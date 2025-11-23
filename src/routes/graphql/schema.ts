@@ -1,4 +1,10 @@
 import { GraphQLSchema, GraphQLObjectType } from 'graphql';
+import {
+  UserType,
+  ProfileType,
+  PostType,
+  MemberTypeType,
+} from './types/index.js';
 
 const RootQueryType = new GraphQLObjectType({
     name: 'RootQueryType',

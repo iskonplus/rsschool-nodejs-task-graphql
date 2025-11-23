@@ -6,10 +6,9 @@ import {
     GraphQLList,
 } from 'graphql';
 import { UUIDScalar } from '../scalars.js';
-// import { ProfileType } from './Profile.js';
-// import { PostType } from './Post.js';
-// import { MemberTypeType } from './MemberType.js';
-import { PostType, ProfileType, MemberTypeType } from './types/index.js';
+import { ProfileType } from './Profile.js';
+import { PostType } from './Post.js';
+import { MemberTypeType } from './MemberType.js';
 
 export const UserType = new GraphQLObjectType({
 

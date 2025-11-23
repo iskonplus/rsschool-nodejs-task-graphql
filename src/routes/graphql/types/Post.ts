@@ -4,7 +4,7 @@ import {
     GraphQLString,
 } from 'graphql';
 import { UUIDScalar } from '../scalars.js';
-import { UserType } from './types/index.js';
+import { UserType } from './User.js';
 
 export const PostType = new GraphQLObjectType({
 
@@ -17,5 +17,5 @@ export const PostType = new GraphQLObjectType({
 
         author: { type: UserType },
     }),
-    
+
 });

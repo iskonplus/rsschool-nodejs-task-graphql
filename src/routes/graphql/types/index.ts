@@ -1,4 +1,4 @@
-export * from './User.js';
-export * from './Profile.js';
-export * from './Post.js';
-export * from './MemberType.js';
+export { UserType } from './User.js';
+export { ProfileType } from './Profile.js';
+export { PostType } from './Post.js';
+export { MemberTypeType } from './MemberType.js';
