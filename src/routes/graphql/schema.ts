@@ -261,6 +261,14 @@ const ChangeProfileInput = new GraphQLInputObjectType({
   },
 });
 
+const ChangeUserInput = new GraphQLInputObjectType({
+  name: 'ChangeUserInput',
+  fields: {
+    name: { type: GraphQLString },
+    balance: { type: GraphQLFloat },
+  },
+});
+
 
 
 const Mutations = new GraphQLObjectType<GqlContext>({
@@ -405,7 +413,19 @@ const Mutations = new GraphQLObjectType<GqlContext>({
         });
       },
     },
-
+    
+    changeUser: {
+      type: new GraphQLNonNull(UserType),
+      args: {
+        id: { type: new GraphQLNonNull(UUIDScalar) },
+        dto: { type: new GraphQLNonNull(ChangeUserInput) },
+      },
+      resolve: async (_src, args, { prisma }) =>
+        prisma.user.update({
+          where: { id: args.id },
+          data: args.dto,
+        }),
+    },
 
 
   })
