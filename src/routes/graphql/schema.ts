@@ -220,6 +220,15 @@ const CreateUserInput = new GraphQLInputObjectType({
   },
 });
 
+const CreatePostInput = new GraphQLInputObjectType({
+  name: 'CreatePostInput',
+  fields: {
+    title: { type: new GraphQLNonNull(GraphQLString) },
+    content: { type: new GraphQLNonNull(GraphQLString) },
+    userId: { type: new GraphQLNonNull(UUIDScalar) },
+  },
+});
+
 
 
 const Mutations = new GraphQLObjectType({
@@ -241,6 +250,24 @@ const Mutations = new GraphQLObjectType({
         });
       },
     },
+    createPost: {
+      type: new GraphQLNonNull(PostType),
+      args: {
+        dto: { type: new GraphQLNonNull(CreatePostInput) },
+      },
+      async resolve(_src, args, context) {
+        const { prisma } = context;
+        const { title, content, userId } = args.dto;
+
+        const post = await prisma.post.create({
+          data: { title, content, userId },
+        });
+
+        return post;
+      },
+    },
+
+
   }),
 });
 
