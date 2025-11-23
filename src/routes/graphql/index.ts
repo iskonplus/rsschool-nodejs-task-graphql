@@ -27,6 +27,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           prisma,
         },
       });
+        // console.log('GQL RESULT >>>', JSON.stringify(result, null, 2));
+
 
       return result;
     },

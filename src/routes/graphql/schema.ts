@@ -192,12 +192,12 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
 
 
 
-const Mutations = new GraphQLObjectType({
-  name: 'Mutations',
-  fields: () => ({}),
-});
+// const Mutations = new GraphQLObjectType({
+//   name: 'Mutations',
+//   fields: () => ({}),
+// });
 
 export const schema = new GraphQLSchema({
   query: RootQueryType,
-  mutation: Mutations,
+  // mutation: Mutations,
 });
