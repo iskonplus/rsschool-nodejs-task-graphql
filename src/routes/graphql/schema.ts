@@ -5,7 +5,7 @@ import {
   GraphQLList,
   GraphQLError,
 } from 'graphql';
-import { PrismaClient, Post } from '@prisma/client';
+import { PrismaClient, Post, MemberType } from '@prisma/client';
 import { UserType, ProfileType, PostType, MemberTypeType } from './types/index.js';
 import { UUIDScalar } from './scalars.js';
 
@@ -80,6 +80,23 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
         }
 
         return post;
+      },
+    },
+
+    // get member-types
+    memberTypes: {
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(MemberTypeType)),
+      ),
+      async resolve(
+        _source: unknown,
+        _args: unknown,
+        context: GqlContext,
+      ): Promise<MemberType[]> {
+        const { prisma } = context;
+
+        const memberTypes = await prisma.memberType.findMany();
+        return memberTypes;
       },
     },
 
