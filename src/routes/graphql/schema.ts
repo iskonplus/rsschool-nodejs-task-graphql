@@ -413,7 +413,7 @@ const Mutations = new GraphQLObjectType<GqlContext>({
         });
       },
     },
-    
+
     changeUser: {
       type: new GraphQLNonNull(UserType),
       args: {
@@ -425,6 +425,26 @@ const Mutations = new GraphQLObjectType<GqlContext>({
           where: { id: args.id },
           data: args.dto,
         }),
+    },
+
+    // followers
+    subscribeTo: {
+
+      type: new GraphQLNonNull(GraphQLString),
+      args: {
+        userId: { type: new GraphQLNonNull(UUIDScalar) },
+        authorId: { type: new GraphQLNonNull(UUIDScalar) },
+      },
+      resolve: async (_src, args, { prisma }) => {
+        await prisma.subscribersOnAuthors.create({
+          data: {
+            subscriberId: args.userId,
+            authorId: args.authorId,
+          },
+        });
+
+        return 'SUBSCRIBED';
+      },
     },
 
 
