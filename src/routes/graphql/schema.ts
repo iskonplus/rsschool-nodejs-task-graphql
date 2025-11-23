@@ -1,4 +1,10 @@
-import { GraphQLSchema, GraphQLObjectType, GraphQLNonNull, GraphQLList, GraphQLError } from 'graphql';
+import {
+  GraphQLSchema,
+  GraphQLObjectType,
+  GraphQLNonNull,
+  GraphQLList,
+  GraphQLError,
+} from 'graphql';
 import { PrismaClient, Post } from '@prisma/client';
 import { UserType, ProfileType, PostType, MemberTypeType } from './types/index.js';
 import { UUIDScalar } from './scalars.js';
@@ -24,11 +30,7 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
       args: {
         id: { type: new GraphQLNonNull(UUIDScalar) },
       },
-      async resolve(
-        _source: unknown,
-        args: { id: string },
-        context: GqlContext,
-      ) {
+      async resolve(_source: unknown, args: { id: string }, context: GqlContext) {
         const user = await context.prisma.user.findUnique({
           where: { id: args.id },
         });
@@ -38,14 +40,12 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
         }
 
         return user;
-      }
+      },
     },
 
     // get posts
     posts: {
-      type: new GraphQLNonNull(
-        new GraphQLList(new GraphQLNonNull(PostType)),
-      ),
+      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(PostType))),
       async resolve(
         _source: unknown,
         _args: unknown,
@@ -58,9 +58,36 @@ const RootQueryType = new GraphQLObjectType<GqlContext>({
       },
     },
 
+    // get posts by id
+    post: {
+      type: PostType,
+      args: {
+        id: { type: new GraphQLNonNull(UUIDScalar) },
+      },
+      async resolve(
+        _source: unknown,
+        args: { id: string },
+        context: GqlContext,
+      ): Promise<Post> {
+        const { prisma } = context;
 
-  })
+        const post = await prisma.post.findUnique({
+          where: { id: args.id },
+        });
+
+        if (!post) {
+          throw new GraphQLError('Post not found');
+        }
+
+        return post;
+      },
+    },
+
+  }),
+
+
 });
+
 
 const Mutations = new GraphQLObjectType({
   name: 'Mutations',
