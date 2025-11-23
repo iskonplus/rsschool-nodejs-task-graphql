@@ -243,6 +243,14 @@ const CreateProfileInput = new GraphQLInputObjectType({
   },
 });
 
+const ChangePostInput = new GraphQLInputObjectType({
+  name: 'ChangePostInput',
+  fields: {
+    title: { type: GraphQLString },
+    content: { type: GraphQLString },
+  },
+});
+
 
 
 const Mutations = new GraphQLObjectType<GqlContext>({
@@ -340,6 +348,20 @@ const Mutations = new GraphQLObjectType<GqlContext>({
         await prisma.profile.delete({ where: { id: args.id } });
         return 'PROFILE_DELETED';
       },
+    },
+
+    // change
+    changePost: {
+      type: new GraphQLNonNull(PostType),
+      args: {
+        id: { type: new GraphQLNonNull(UUIDScalar) },
+        dto: { type: new GraphQLNonNull(ChangePostInput) },
+      },
+      resolve: async (_src, args, { prisma }) =>
+        prisma.post.update({
+          where: { id: args.id },
+          data: args.dto,
+        }),
     },
 
 
