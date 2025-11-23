@@ -320,7 +320,7 @@ const Mutations = new GraphQLObjectType<GqlContext>({
       },
     },
 
-        deletePost: {
+    deletePost: {
       type: new GraphQLNonNull(GraphQLString),
       args: {
         id: { type: new GraphQLNonNull(UUIDScalar) },
@@ -328,6 +328,17 @@ const Mutations = new GraphQLObjectType<GqlContext>({
       resolve: async (_src, args, { prisma }) => {
         await prisma.post.delete({ where: { id: args.id } });
         return 'POST_DELETED';
+      },
+    },
+
+    deleteProfile: {
+      type: new GraphQLNonNull(GraphQLString),
+      args: {
+        id: { type: new GraphQLNonNull(UUIDScalar) },
+      },
+      resolve: async (_src, args, { prisma }) => {
+        await prisma.profile.delete({ where: { id: args.id } });
+        return 'PROFILE_DELETED';
       },
     },
 
