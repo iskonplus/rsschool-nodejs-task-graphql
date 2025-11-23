@@ -447,6 +447,26 @@ const Mutations = new GraphQLObjectType<GqlContext>({
       },
     },
 
+    unsubscribeFrom: {
+      type: new GraphQLNonNull(GraphQLString),
+      args: {
+        userId: { type: new GraphQLNonNull(UUIDScalar) },
+        authorId: { type: new GraphQLNonNull(UUIDScalar) },
+      },
+      resolve: async (_src, args, { prisma }) => {
+        await prisma.subscribersOnAuthors.delete({
+          where: {
+            subscriberId_authorId: {
+              subscriberId: args.userId,
+              authorId: args.authorId,
+            },
+          },
+        });
+
+        return 'UNSUBSCRIBED';
+      },
+    }
+
 
   })
 });
